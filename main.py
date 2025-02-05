@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import json
+import os
 import base64
 import requests
 import random
@@ -83,11 +84,17 @@ def params_to_fuck_ass_url(data: dict[str, str]) -> dict[str, str]:
 def get_random_arbitrary(min: int = 0, max: int = 99):
     return int(random.random() * (max - min) + min)
 
-def get_academic_time_table(cookie: dict[str, str], year: int) -> str:
+def get_course_codes(cookie: dict[str, str], year: int):
     terms = "".join(f"{year}{i}{0};" for i in range(0, 4))
     params = params_to_fuck_ass_url({"districts": "100;200;300;400;", "terms": terms})
     url = "https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable_subjects";
-    return requests.get(url, headers=headers, params=params, cookies=cookie).text
+    return requests.get(url, headers=headers, params=params, cookies=cookie).json()
+
+def get_course_data(subject_code: str, cookie: dict[str, str], year: int):
+    terms = "".join(f"{year}{i}{0};" for i in range(0, 4))
+    params = params_to_fuck_ass_url({"districts": "100;200;300;400;", "page_size": "9999", "page_num": "1", "terms": terms, "crse_num": "null", "max": "1000", "subj_code": subject_code, "offset": "0"})
+    url = "https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable";
+    return requests.get(url, headers=headers, params=params, cookies=cookie).json()
 
 # Requesting courses
 # fuck_ass_url_to_basic_params("https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable?MTM=b2Zmc2V0=NTQ=MA==&MTg=bWF4=OTk=MTAwMA==&MjM=ZGlzdHJpY3Rz=OA==MTAwOzIwMDszMDA7NDAwOw==&MzU=Y3JzZV9udW1i=NjA=null&MzU=cGFnZV9zaXpl=NDM=OTk5OQ==&NDQ=dGVybXM==MTg=MjAyNTAwOzIwMjUxMDsyMDI1MjA7MjAyNTMwOw==&NjA=c3Vial9jb2Rl=Mzg=Q1NDSQ==&Njg=cGFnZV9udW0==NjE=MQ==&encoded=true")
@@ -103,5 +110,26 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
     "Referer": "https://self-service.dal.ca/BannerExtensibility/customPage/page/dal.stuweb_academicTimetable",
 }
+year = 2025
 
+course_codes = get_course_codes(cookie, year)
 
+try: os.mkdir("datasets")
+except: ...
+
+for subject_idx in range(len(course_codes)):
+    subject = course_codes[subject_idx]["CODE"]
+    filename = f"datasets/{subject}.json"
+    print(f"Downloading: {filename} | Completed: [{subject_idx} / {len(course_codes)}]", end="\r")
+
+    # Don't download if the file already exists
+    if os.path.isfile(filename): continue
+
+    data = get_course_data(subject, cookie, year)
+    if len(data) == 0:
+        print(f"Failed to get data from course: {subject}! Breaking (maybe get a new cookie).")
+        break
+    with open(filename, "w") as f:
+        f.write(json.dumps(data, indent=4))
+
+print("\nFinished")
