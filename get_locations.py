@@ -12,20 +12,23 @@ for file in glob("datasets/*.json"):
 
     for course in data:
         if course["LOCATIONS"] != None:
-            location = course["LOCATIONS"].split("<br>")[-1]
+            multi_locations = []
+            for location in course["LOCATIONS"].split("<br>"):
 
-            # Basically `.contains()`
-            if location.find(", ") != -1:
-                location = location.split(", ")
-                building = list(location.pop(0).split(" "))
-                location.append(building.pop(-1))
-                building = " ".join(building)
+                if location.find("<") != -1 or location.find(">") != -1: continue
 
-                for room in location:
-                    locations.add(f"{building} {room}")
+                # Basically `.contains()`
+                if location.find(", ") != -1:
+                    location = location.split(", ")
+                    building = list(location.pop(0).split(" "))
+                    location.append(building.pop(-1))
+                    building = " ".join(building)
 
-            else:
-                locations.add(location)
+                    for room in location:
+                        locations.add(f"{building} {room}")
+
+                else: locations.add(location)
+
         else:
             print(f"Course doesn't have location: {course["CRSE_TITLE"]}")
 
