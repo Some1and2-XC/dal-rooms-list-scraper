@@ -11,7 +11,26 @@ for file in glob("datasets/*.json"):
         data = json.loads(f.read())
 
     for course in data:
+
         if course["LOCATIONS"] != None and course["SCHD_TYPE"] == "Lec":
+
+            # Validates the maximum enrollment amount
+            if "MAX_ENRL" not in course:
+                print(f"Course excluded from the list for not including maximum enrollment: {course['CRSE_TITLE']}")
+                continue
+
+            max_enrollment = 0
+
+            try:
+                max_enrollment = int(course["MAX_ENRL"])
+            except:
+                # Handling for int parsing error
+                print(f"Course excluded from the list for not having an integer maximum enrollment: {course['CRSE_TITLE']}")
+                continue
+
+            if max_enrollment <= 50:
+                print(f"Course excluded from the list for not having large enough maximum enrollment: {course['CRSE_TITLE']}")
+                continue
 
             multi_locations = []
             for location in course["LOCATIONS"].split("<br>"):
@@ -29,9 +48,9 @@ for file in glob("datasets/*.json"):
                         locations.add(f"{building} {room}")
 
                 else: locations.add(location)
+            continue;
 
-        else:
-            print(f"Course excluded from list: {course["CRSE_TITLE"]}")
+        else: print(f"Course excluded from list: {course["CRSE_TITLE"]}")
 
 with open("locations.txt", "w") as f:
     locations = list(locations)
