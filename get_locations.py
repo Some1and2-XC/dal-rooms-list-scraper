@@ -11,7 +11,8 @@ for file in glob("datasets/*.json"):
         data = json.loads(f.read())
 
     for course in data:
-        if course["LOCATIONS"] != None:
+        if course["LOCATIONS"] != None and course["SCHD_TYPE"] == "Lec":
+
             multi_locations = []
             for location in course["LOCATIONS"].split("<br>"):
 
