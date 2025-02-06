@@ -7,9 +7,6 @@ import requests
 import random
 from urllib.parse import *
 
-with open("subjects.json", "r") as f:
-    data = json.loads(f.read())
-
 def fuck_ass_url_to_basic_params(url: str):
     # print("Parsing Stuff")
     parser = urlparse(url)

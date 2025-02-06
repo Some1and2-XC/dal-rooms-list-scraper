@@ -31,7 +31,7 @@ for file in glob("datasets/*.json"):
                 else: locations.add(location)
 
         else:
-            print(f"Course doesn't have location: {course["CRSE_TITLE"]}")
+            print(f"Course excluded from list: {course["CRSE_TITLE"]}")
 
 with open("locations.txt", "w") as f:
     locations = list(locations)
