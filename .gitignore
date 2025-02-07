@@ -2,3 +2,4 @@ subjects.json
 venv/
 datasets/
 locations.txt
+__pycache__/
