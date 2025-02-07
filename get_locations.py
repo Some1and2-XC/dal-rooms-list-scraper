@@ -44,8 +44,8 @@ for file in glob("datasets/*.json"):
                     location_list.append(building.pop(-1))
                     building = " ".join(building)
 
-                    for room in location:
-                        locations.add(f"{building} {room}")
+                    for room in location_list:
+                        location_lists.add(f"{building} {room}")
 
                 else:
                     locations.add(location)
