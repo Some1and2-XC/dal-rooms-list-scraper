@@ -1,5 +1,8 @@
 subjects.json
 venv/
 datasets/
+equivalencies/
+*.json
+dal.db
 locations.txt
 __pycache__/

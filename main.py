@@ -34,6 +34,9 @@ def fuck_ass_url_to_basic_params(url: str):
             if char_idx == len(val) - 1:
                 values.append(out_word)
 
+        if len(values) == 3:  # Means the value was null
+            values.append("")
+
         # print(values)
         if len(values) == 2:
             values[0] = values[0].strip("=")
@@ -46,7 +49,10 @@ def fuck_ass_url_to_basic_params(url: str):
             values.pop(3)
             values.pop(2)
         else:
+            for (i, value) in enumerate(values):
+                values[i] = base64.b64decode(value)
             print(f"Warning: Unexpected length value: {len(values)}")
+        print(values)
 
         all_values[values[0]] = values[1]
 
@@ -96,41 +102,42 @@ def get_course_data(subject_code: str, cookie: dict[str, str], year: int):
     url = "https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable";
     return requests.get(url, headers=headers, params=params, cookies=cookie).json()
 
+if __name__ == "__main__":
 
-# Requesting courses
-# fuck_ass_url_to_basic_params("https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable?MTM=b2Zmc2V0=NTQ=MA==&MTg=bWF4=OTk=MTAwMA==&MjM=ZGlzdHJpY3Rz=OA==MTAwOzIwMDszMDA7NDAwOw==&MzU=Y3JzZV9udW1i=NjA=null&MzU=cGFnZV9zaXpl=NDM=OTk5OQ==&NDQ=dGVybXM==MTg=MjAyNTAwOzIwMjUxMDsyMDI1MjA7MjAyNTMwOw==&NjA=c3Vial9jb2Rl=Mzg=Q1NDSQ==&Njg=cGFnZV9udW0==NjE=MQ==&encoded=true")
-# Getting the dataset
-# fuck_ass_url_to_basic_params("https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable_subjects?NA==dGVybXM==Nzk=MjAyNTMwOzIwMjUyMDsyMDI1MTA7MjAyNTAwOw==&OQ==ZGlzdHJpY3Rz=NTg=MTAwOzIwMDszMDA7NDAwOw==&encoded=true")
-# print(get_academic_time_table(cookie, 2025))
+    # Requesting courses
+    # fuck_ass_url_to_basic_params("https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable?MTM=b2Zmc2V0=NTQ=MA==&MTg=bWF4=OTk=MTAwMA==&MjM=ZGlzdHJpY3Rz=OA==MTAwOzIwMDszMDA7NDAwOw==&MzU=Y3JzZV9udW1i=NjA=null&MzU=cGFnZV9zaXpl=NDM=OTk5OQ==&NDQ=dGVybXM==MTg=MjAyNTAwOzIwMjUxMDsyMDI1MjA7MjAyNTMwOw==&NjA=c3Vial9jb2Rl=Mzg=Q1NDSQ==&Njg=cGFnZV9udW0==NjE=MQ==&encoded=true")
+    # Getting the dataset
+    # fuck_ass_url_to_basic_params("https://self-service.dal.ca/BannerExtensibility/internalPb/virtualDomains.dal_stuweb_academicTimetable_subjects?NA==dGVybXM==Nzk=MjAyNTMwOzIwMjUyMDsyMDI1MTA7MjAyNTAwOw==&OQ==ZGlzdHJpY3Rz=NTg=MTAwOzIwMDszMDA7NDAwOw==&encoded=true")
+    # print(get_academic_time_table(cookie, 2025))
 
-cookie = input("Enter your browser cookie from `https://self-service.dal.ca/BannerExtensibility/customPage/page/dal.stuweb_academicTimetable`: ")
-cookie = {"JSESSIONID": cookie}
+    cookie = input("Enter your browser cookie from `https://self-service.dal.ca/BannerExtensibility/customPage/page/dal.stuweb_academicTimetable`: ")
+    cookie = {"JSESSIONID": cookie}
 
-headers = {
-    "Host": "self-service.dal.ca",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
-    "Referer": "https://self-service.dal.ca/BannerExtensibility/customPage/page/dal.stuweb_academicTimetable",
-}
-year = 2025
+    headers = {
+        "Host": "self-service.dal.ca",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+        "Referer": "https://self-service.dal.ca/BannerExtensibility/customPage/page/dal.stuweb_academicTimetable",
+    }
+    year = 2025
 
-course_codes = get_course_codes(cookie, year)
+    course_codes = get_course_codes(cookie, year)
 
-try: os.mkdir("datasets")
-except: ...
+    try: os.mkdir("datasets")
+    except: ...
 
-for subject_idx in range(len(course_codes)):
-    subject = course_codes[subject_idx]["CODE"]
-    filename = f"datasets/{subject}.json"
-    print(f"Downloading: {filename} | Completed: [{subject_idx} / {len(course_codes)}]", end="\r")
+    for subject_idx in range(len(course_codes)):
+        subject = course_codes[subject_idx]["CODE"]
+        filename = f"datasets/{subject}.json"
+        print(f"Downloading: {filename} | Completed: [{subject_idx} / {len(course_codes)}]", end="\r")
 
-    # Don't download if the file already exists
-    if os.path.isfile(filename): continue
+        # Don't download if the file already exists
+        if os.path.isfile(filename): continue
 
-    data = get_course_data(subject, cookie, year)
-    if len(data) == 0:
-        print(f"Failed to get data from course: {subject}! Breaking (maybe get a new cookie).")
-        break
-    with open(filename, "w") as f:
-        f.write(json.dumps(data, indent=4))
+        data = get_course_data(subject, cookie, year)
+        if len(data) == 0:
+            print(f"Failed to get data from course: {subject}! Breaking (maybe get a new cookie).")
+            break
+        with open(filename, "w") as f:
+            f.write(json.dumps(data, indent=4))
 
-print("\nFinished")
+    print("\nFinished")
